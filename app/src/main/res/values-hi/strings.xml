@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">पार्कसेवा</string>
+    
+    <!-- Home Screen -->
+    <string name="good_morning">सुप्रभात</string>
+    <string name="good_afternoon">नमस्ते</string>
+    <string name="good_evening">शुभ संध्या</string>
+    <string name="good_night">शुभ रात्रि</string>
+    <string name="username">संकल्प</string>
+    <string name="location">मुंबई, महाराष्ट्र</string>
+    <string name="search_hint">पार्किंग स्थान खोजें...</string>
+    <string name="live_availability">लाइव उपलब्धता</string>
+    <string name="slots_available">आसपास 245 स्लॉट उपलब्ध</string>
+    <string name="navigate">नेविगेट</string>
+    <string name="find_parking">पार्किंग खोजें</string>
+    <string name="my_bookings">मेरी बुकिंग</string>
+    <string name="wallet">वॉलेट</string>
+    <string name="history">इतिहास</string>
+    <string name="gate_access">गेट एक्सेस</string>
+    <string name="support">सहायता</string>
+    <string name="nearby_parking">आसपास की पार्किंग</string>
+    
+    <!-- Park Screen -->
+    <string name="vehicle_number">वाहन संख्या</string>
+    <string name="vehicle_type">वाहन का प्रकार</string>
+    <string name="park_now">अभी पार्क करें</string>
+    <string name="vehicle_hint">जैसे MH12AB1234</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile">प्रोफाइल</string>
+    <string name="settings">सेटिंग्स</string>
+    <string name="language">भाषा</string>
+    <string name="logout">लॉगआउट</string>
+    
+    <!-- Messages -->
+    <string name="no_bookings_found">कोई बुकिंग नहीं मिली</string>
+    <string name="no_history_found">कोई इतिहास नहीं मिला</string>
+    <string name="booking_moved_to_history">बुकिंग इतिहास में स्थानांतरित</string>
+    <string name="cannot_delete_history">इतिहास आइटम हटा नहीं सकते</string>
+    <string name="error">त्रुटि</string>
+    <string name="close">बंद करें</string>
+    
+    <!-- Language Options -->
+    <string name="english">English</string>
+    <string name="marathi">मराठी</string>
+    <string name="hindi">हिंदी</string>
+    <string name="select_language">भाषा चुनें</string>
+</resources>

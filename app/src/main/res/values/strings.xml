@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">ParkSeva</string>
+    
+    <!-- Home Screen -->
+    <string name="good_morning">Good Morning</string>
+    <string name="good_afternoon">Good Afternoon</string>
+    <string name="good_evening">Good Evening</string>
+    <string name="good_night">Good Night</string>
+    <string name="username">Sankalp</string>
+    <string name="location">Mumbai, Maharashtra</string>
+    <string name="search_hint">Search parking locations...</string>
+    <string name="live_availability">Live Availability</string>
+    <string name="slots_available">245 slots available nearby</string>
+    <string name="navigate">Navigate</string>
+    <string name="find_parking">Find Parking</string>
+    <string name="my_bookings">My Bookings</string>
+    <string name="wallet">Wallet</string>
+    <string name="history">History</string>
+    <string name="gate_access">Gate Access</string>
+    <string name="support">Support</string>
+    <string name="nearby_parking">Nearby Parking</string>
+    <string name="parking_locations">Parking Locations</string>
+    
+    <!-- Park Screen -->
+    <string name="vehicle_number">Vehicle Number</string>
+    <string name="vehicle_type">Vehicle Type</string>
+    <string name="check_entry_status">Check Entry Status</string>
+    <string name="park_now">Park Now</string>
+    <string name="vehicle_hint">e.g. MH12AB1234</string>
+    <string name="my_location">My Location</string>
+    <string name="refresh_map">Refresh</string>
+    <string name="loading_parking_locations">Loading parking locations...</string>
+    <string name="failed_load_locations">Failed to load parking locations.</string>
+    <string name="network_error_locations">Network error while loading locations.</string>
+    <string name="no_locations_found">No parking locations found.</string>
+    <string name="location_not_ready">Current location is not ready yet.</string>
+    <string name="location_permission_denied">Location permission denied.</string>
+    <string name="no_navigation_app">No navigation app available.</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile">Profile</string>
+    <string name="settings">Settings</string>
+    <string name="language">Language</string>
+    <string name="logout">Logout</string>
+    
+    <!-- Messages -->
+    <string name="no_bookings_found">No bookings found</string>
+    <string name="no_history_found">No history found</string>
+    <string name="booking_moved_to_history">Booking moved to history</string>
+    <string name="cannot_delete_history">Cannot delete history items</string>
+    <string name="error">Error</string>
+    <string name="close">Close</string>
+    
+    <!-- Language Options -->
+    <string name="english">English</string>
+    <string name="marathi">मराठी</string>
+    <string name="hindi">हिंदी</string>
+    <string name="select_language">Select Language</string>
+</resources>
