@@ -44,7 +44,26 @@
     <string name="settings">Settings</string>
     <string name="language">Language</string>
     <string name="logout">Logout</string>
-    
+    <string name="wallet_balance">Wallet Balance</string>
+    <string name="wallet_hint">Use wallet funds for quick parking payments and offline-ready balance tracking.</string>
+    <string name="recent_wallet_activity">Recent Wallet Activity</string>
+    <string name="no_wallet_activity_yet">No wallet activity yet.</string>
+    <string name="top_up_wallet">Top Up Wallet</string>
+    <string name="current_wallet_balance">Current balance</string>
+    <string name="quick_add">Quick add</string>
+    <string name="custom_amount">Custom amount</string>
+    <string name="enter_amount">Enter amount in rupees</string>
+    <string name="add_money">Add Money</string>
+    <string name="add_rs_100">+ Rs 100</string>
+    <string name="add_rs_250">+ Rs 250</string>
+    <string name="add_rs_500">+ Rs 500</string>
+    <string name="estimated_charge_default">Estimated parking charge will appear here.</string>
+    <string name="wallet_insufficient">Insufficient wallet balance. Please top up before booking.</string>
+    <string name="wallet_top_up_success">Money added to wallet.</string>
+    <string name="wallet_top_up_invalid">Enter at least Rs 10.</string>
+    <string name="wallet_payment_title">Parking payment</string>
+    <string name="wallet_top_up_title">Wallet top up</string>
+
     <!-- Messages -->
     <string name="no_bookings_found">No bookings found</string>
     <string name="no_history_found">No history found</string>

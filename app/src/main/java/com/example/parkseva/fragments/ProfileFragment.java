@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,7 +21,9 @@ import com.example.parkseva.LoginActivity;
 import com.example.parkseva.R;
 import com.example.parkseva.api.ApiClient;
 import com.example.parkseva.models.User;
+import com.example.parkseva.utils.WalletManager;
 
+import java.util.List;
 import java.util.Locale;
 
 import retrofit2.Call;
@@ -31,8 +34,8 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class ProfileFragment extends Fragment {
 
-    private TextView tvUserName, tvUserPhone, tvUserEmail, tvUserRole;
-    private Button btnLogout, btnSettings;
+    private TextView tvUserName, tvUserPhone, tvUserEmail, tvUserRole, tvWalletBalance, tvWalletActivity;
+    private Button btnLogout, btnSettings, btnTopUpWallet;
     private SharedPreferences sharedPreferences;
 
     @Nullable
@@ -52,8 +55,11 @@ public class ProfileFragment extends Fragment {
         tvUserPhone = view.findViewById(R.id.tvUserPhone);
         tvUserEmail = view.findViewById(R.id.tvUserEmail);
         tvUserRole = view.findViewById(R.id.tvUserRole);
+        tvWalletBalance = view.findViewById(R.id.tvWalletBalance);
+        tvWalletActivity = view.findViewById(R.id.tvWalletActivity);
         btnLogout = view.findViewById(R.id.btnLogout);
         btnSettings = view.findViewById(R.id.btnSettings);
+        btnTopUpWallet = view.findViewById(R.id.btnTopUpWallet);
         
         sharedPreferences = requireContext().getSharedPreferences("ParkSevaPrefs", MODE_PRIVATE);
     }
@@ -61,6 +67,7 @@ public class ProfileFragment extends Fragment {
     private void setupClickListeners() {
         btnLogout.setOnClickListener(v -> logout());
         btnSettings.setOnClickListener(v -> showLanguageDialog());
+        btnTopUpWallet.setOnClickListener(v -> showTopUpDialog());
     }
 
     private void loadUserProfile() {
@@ -96,6 +103,7 @@ public class ProfileFragment extends Fragment {
         tvUserPhone.setText(user.getPhoneNumber());
         tvUserEmail.setText(user.getEmail() != null ? user.getEmail() : "Not provided");
         tvUserRole.setText(user.getRole().toUpperCase());
+        refreshWalletSection();
     }
 
     private void loadFromCache() {
@@ -105,6 +113,7 @@ public class ProfileFragment extends Fragment {
         tvUserPhone.setText("Loading...");
         tvUserEmail.setText("Loading...");
         tvUserRole.setText("Loading...");
+        refreshWalletSection();
     }
 
     private void logout() {
@@ -140,5 +149,79 @@ public class ProfileFragment extends Fragment {
         requireContext().getResources().updateConfiguration(config, requireContext().getResources().getDisplayMetrics());
         
         requireActivity().recreate();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshWalletSection();
+    }
+
+    private void refreshWalletSection() {
+        if (tvWalletBalance == null || tvWalletActivity == null) {
+            return;
+        }
+
+        tvWalletBalance.setText(WalletManager.formatCurrency(WalletManager.getBalance(requireContext())));
+
+        List<String> transactions = WalletManager.getRecentTransactions(requireContext(), 3);
+        if (transactions.isEmpty()) {
+            tvWalletActivity.setText(getString(R.string.no_wallet_activity_yet));
+        } else {
+            tvWalletActivity.setText(android.text.TextUtils.join("\n\n", transactions));
+        }
+    }
+
+    private void showTopUpDialog() {
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_wallet_top_up, null, false);
+        TextView tvTopUpBalance = dialogView.findViewById(R.id.tvTopUpBalance);
+        EditText etCustomAmount = dialogView.findViewById(R.id.etCustomAmount);
+        Button btnAdd100 = dialogView.findViewById(R.id.btnAdd100);
+        Button btnAdd250 = dialogView.findViewById(R.id.btnAdd250);
+        Button btnAdd500 = dialogView.findViewById(R.id.btnAdd500);
+        Button btnAddCustomAmount = dialogView.findViewById(R.id.btnAddCustomAmount);
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create();
+
+        tvTopUpBalance.setText(getString(R.string.current_wallet_balance) + ": "
+            + WalletManager.formatCurrency(WalletManager.getBalance(requireContext())));
+
+        View.OnClickListener quickAddListener = v -> {
+            double amount = v.getId() == R.id.btnAdd100 ? 100 : v.getId() == R.id.btnAdd250 ? 250 : 500;
+            handleTopUp(amount, dialog);
+        };
+
+        btnAdd100.setOnClickListener(quickAddListener);
+        btnAdd250.setOnClickListener(quickAddListener);
+        btnAdd500.setOnClickListener(quickAddListener);
+        btnAddCustomAmount.setOnClickListener(v -> {
+            String value = etCustomAmount.getText().toString().trim();
+            if (value.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.wallet_top_up_invalid, Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                handleTopUp(Double.parseDouble(value), dialog);
+            } catch (NumberFormatException exception) {
+                Toast.makeText(requireContext(), R.string.wallet_top_up_invalid, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void handleTopUp(double amount, AlertDialog dialog) {
+        boolean success = WalletManager.addFunds(requireContext(), amount, getString(R.string.wallet_top_up_title));
+        if (!success) {
+            Toast.makeText(requireContext(), R.string.wallet_top_up_invalid, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(requireContext(), R.string.wallet_top_up_success, Toast.LENGTH_SHORT).show();
+        refreshWalletSection();
+        dialog.dismiss();
     }
 }

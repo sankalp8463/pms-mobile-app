@@ -43,9 +43,16 @@ public class HomeFragment extends Fragment {
             if (tvGreeting != null) {
                 tvGreeting.setText(getTimeBasedGreeting());
             }
+
+            TextView tvUsername = view.findViewById(R.id.tvUsername);
+            if (tvUsername != null) {
+                SharedPreferences prefs = requireContext().getSharedPreferences("ParkSevaPrefs", Context.MODE_PRIVATE);
+                tvUsername.setText(prefs.getString("user_name", getString(R.string.username)));
+            }
             
             MaterialCardView quickAction1 = view.findViewById(R.id.quickAction1);
             MaterialCardView quickAction2 = view.findViewById(R.id.quickAction2);
+            MaterialCardView quickAction3 = view.findViewById(R.id.quickAction3);
             MaterialCardView quickAction4 = view.findViewById(R.id.quickAction4);
             Button btnNavigate = view.findViewById(R.id.btnNavigate);
             
@@ -63,6 +70,14 @@ public class HomeFragment extends Fragment {
             
             if (quickAction2 != null) {
                 quickAction2.setOnClickListener(v -> showBookings());
+            }
+
+            if (quickAction3 != null) {
+                quickAction3.setOnClickListener(v -> {
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).switchToTab(3);
+                    }
+                });
             }
             
             if (quickAction4 != null) {

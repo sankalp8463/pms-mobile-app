@@ -33,6 +33,7 @@ import com.example.parkseva.api.ApiClient;
 import com.example.parkseva.models.BookingRequest;
 import com.example.parkseva.models.BookingResponse;
 import com.example.parkseva.models.ParkingEntryStatusResponse;
+import com.example.parkseva.utils.WalletManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,13 +48,16 @@ import retrofit2.Response;
 public class ParkFragment extends Fragment {
 
     private static final String TAG = "ParkFragment";
-    private static final String OFFLINE_SMS_NUMBER = "7498301509";
+    private static final String OFFLINE_SMS_NUMBER = "8530531699";
     private static final int REQUEST_SEND_SMS = 1201;
     private EditText etVehicleNumber;
     private Spinner spinnerVehicleType;
     private Button btnParkNow;
     private Button btnCheckEntryStatus;
+    private Button btnTopUpWallet;
     private TextView tvEntryStatus;
+    private TextView tvWalletBalance;
+    private TextView tvEstimatedCharge;
     private String pendingOfflineSmsBody;
 
     @Nullable
@@ -65,7 +69,10 @@ public class ParkFragment extends Fragment {
         spinnerVehicleType = view.findViewById(R.id.spinnerVehicleType);
         btnParkNow = view.findViewById(R.id.btnParkNow);
         btnCheckEntryStatus = view.findViewById(R.id.btnCheckEntryStatus);
+        btnTopUpWallet = view.findViewById(R.id.btnTopUpWallet);
         tvEntryStatus = view.findViewById(R.id.tvEntryStatus);
+        tvWalletBalance = view.findViewById(R.id.tvWalletBalance);
+        tvEstimatedCharge = view.findViewById(R.id.tvEstimatedCharge);
         
         String[] vehicleTypes = {"car", "bike", "truck"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), 
@@ -75,6 +82,8 @@ public class ParkFragment extends Fragment {
         
         btnCheckEntryStatus.setOnClickListener(v -> checkVehicleEntryStatus());
         btnParkNow.setOnClickListener(v -> parkVehicle());
+        btnTopUpWallet.setOnClickListener(v -> showTopUpDialog());
+        spinnerVehicleType.post(this::refreshWalletUI);
         
         return view;
     }
@@ -82,9 +91,16 @@ public class ParkFragment extends Fragment {
     private void parkVehicle() {
         String vehicleNumber = normalizeVehicleNumber(etVehicleNumber.getText().toString());
         String vehicleType = spinnerVehicleType.getSelectedItem().toString();
+        double parkingFee = getParkingFee(vehicleType);
         
         if (vehicleNumber.isEmpty()) {
             Toast.makeText(requireContext(), "Enter vehicle number", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!WalletManager.hasSufficientBalance(requireContext(), parkingFee)) {
+            showEntryStatus(getString(R.string.wallet_insufficient), false);
+            Toast.makeText(requireContext(), R.string.wallet_insufficient, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -142,6 +158,7 @@ public class ParkFragment extends Fragment {
     
     private void bookSlot(BookingRequest request) {
         Log.d(TAG, "Booking: " + request.getVehicleNumber() + ", " + request.getVehicleType());
+        double parkingFee = getParkingFee(request.getVehicleType());
         
         ApiClient.getParkingApi().bookSlot(request).enqueue(new Callback<BookingResponse>() {
             @Override
@@ -151,15 +168,25 @@ public class ParkFragment extends Fragment {
                     BookingResponse booking = response.body();
                     Log.d(TAG, "Booking success: " + booking.getId());
                     setLoadingState(false);
+
+                    double amountToCharge = booking.getTotalAmount() > 0 ? booking.getTotalAmount() : parkingFee;
+                    if (!WalletManager.charge(requireContext(), amountToCharge,
+                            getString(R.string.wallet_payment_title) + " - " + booking.getSlotNumber())) {
+                        showEntryStatus(getString(R.string.wallet_insufficient), false);
+                        Toast.makeText(requireContext(), R.string.wallet_insufficient, Toast.LENGTH_SHORT).show();
+                        refreshWalletUI();
+                        return;
+                    }
                     
                     saveBookingLocally(booking);
                     showEntryStatus("Parking booked successfully.", true);
+                    refreshWalletUI();
                     
                     Intent intent = new Intent(requireContext(), QRCodeActivity.class);
                     intent.putExtra("vehicleNumber", booking.getVehicleNumber());
                     intent.putExtra("slotNumber", booking.getSlotNumber());
                     intent.putExtra("bookingId", booking.getId());
-                    intent.putExtra("amount", 0.0);
+                    intent.putExtra("amount", amountToCharge);
                     startActivity(intent);
                     etVehicleNumber.setText("");
                 } else {
@@ -246,6 +273,7 @@ public class ParkFragment extends Fragment {
     private void setLoadingState(boolean loading) {
         btnParkNow.setEnabled(!loading);
         btnCheckEntryStatus.setEnabled(!loading);
+        btnTopUpWallet.setEnabled(!loading);
     }
 
     private void showEntryStatus(String message, boolean positive) {
@@ -334,6 +362,12 @@ public class ParkFragment extends Fragment {
         pendingOfflineSmsBody = null;
         Toast.makeText(requireContext(), "SMS permission denied", Toast.LENGTH_SHORT).show();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshWalletUI();
+    }
     
     private void saveBookingLocally(BookingResponse booking) {
         SharedPreferences prefs = requireContext().getSharedPreferences("ParkSevaPrefs", Context.MODE_PRIVATE);
@@ -351,5 +385,81 @@ public class ParkFragment extends Fragment {
         } catch (Exception e) {
             Log.e(TAG, "Error saving booking", e);
         }
+    }
+
+    private void refreshWalletUI() {
+        if (tvWalletBalance == null || tvEstimatedCharge == null || spinnerVehicleType == null) {
+            return;
+        }
+
+        String vehicleType = spinnerVehicleType.getSelectedItem() != null
+            ? spinnerVehicleType.getSelectedItem().toString() : "car";
+        double estimatedCharge = getParkingFee(vehicleType);
+        tvWalletBalance.setText(WalletManager.formatCurrency(WalletManager.getBalance(requireContext())));
+        tvEstimatedCharge.setText("Estimated " + vehicleType + " parking charge: "
+            + WalletManager.formatCurrency(estimatedCharge));
+    }
+
+    private double getParkingFee(String vehicleType) {
+        if ("bike".equalsIgnoreCase(vehicleType)) {
+            return 20.0;
+        }
+        if ("truck".equalsIgnoreCase(vehicleType)) {
+            return 80.0;
+        }
+        return 50.0;
+    }
+
+    private void showTopUpDialog() {
+        View dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_wallet_top_up, null, false);
+        TextView tvTopUpBalance = dialogView.findViewById(R.id.tvTopUpBalance);
+        EditText etCustomAmount = dialogView.findViewById(R.id.etCustomAmount);
+        Button btnAdd100 = dialogView.findViewById(R.id.btnAdd100);
+        Button btnAdd250 = dialogView.findViewById(R.id.btnAdd250);
+        Button btnAdd500 = dialogView.findViewById(R.id.btnAdd500);
+        Button btnAddCustomAmount = dialogView.findViewById(R.id.btnAddCustomAmount);
+
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create();
+
+        tvTopUpBalance.setText(getString(R.string.current_wallet_balance) + ": "
+            + WalletManager.formatCurrency(WalletManager.getBalance(requireContext())));
+
+        View.OnClickListener quickAddListener = v -> {
+            double amount = v.getId() == R.id.btnAdd100 ? 100 : v.getId() == R.id.btnAdd250 ? 250 : 500;
+            handleTopUp(amount, dialog);
+        };
+
+        btnAdd100.setOnClickListener(quickAddListener);
+        btnAdd250.setOnClickListener(quickAddListener);
+        btnAdd500.setOnClickListener(quickAddListener);
+        btnAddCustomAmount.setOnClickListener(v -> {
+            String value = etCustomAmount.getText().toString().trim();
+            if (value.isEmpty()) {
+                Toast.makeText(requireContext(), R.string.wallet_top_up_invalid, Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            try {
+                handleTopUp(Double.parseDouble(value), dialog);
+            } catch (NumberFormatException exception) {
+                Toast.makeText(requireContext(), R.string.wallet_top_up_invalid, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void handleTopUp(double amount, androidx.appcompat.app.AlertDialog dialog) {
+        boolean success = WalletManager.addFunds(requireContext(), amount, getString(R.string.wallet_top_up_title));
+        if (!success) {
+            Toast.makeText(requireContext(), R.string.wallet_top_up_invalid, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(requireContext(), R.string.wallet_top_up_success, Toast.LENGTH_SHORT).show();
+        refreshWalletUI();
+        dialog.dismiss();
     }
 }

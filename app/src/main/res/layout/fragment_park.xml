@@ -58,6 +58,52 @@
             android:padding="12dp"
             android:layout_marginBottom="24dp" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/wallet_balance"
+                android:textColor="#71717A"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvWalletBalance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Rs 0.00"
+                android:textColor="#09090B"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvEstimatedCharge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/estimated_charge_default"
+                android:textColor="#52525B"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btnTopUpWallet"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="14dp"
+                android:backgroundTint="#18181B"
+                android:text="@string/top_up_wallet"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
+        </LinearLayout>
+
         <Button
             android:id="@+id/btnCheckEntryStatus"
             android:layout_width="match_parent"
